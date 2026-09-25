@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fatura>
+ <cabecalho>
+   <cliente>
+     <nome>Rodrigo Antunes</nome>
+     <morada> Rua Buldogue</morada>
+     <telefone>952693378</telefone>
+   </cliente>
+ </cabecalho>
+ <produtos>
+   <produto>
+     <designacao>Coca-cola zero</designacao>
+     <numero>1</numero>
+     <quantidade>2</quantidade>
+     <data>2023-10-01</data>
+     <preco>2</preco>
+     <codigo>001</codigo>
+   </produto>
+ </produtos>
+</fatura>

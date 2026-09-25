@@ -1,0 +1,146 @@
+<!--
+2.2 Diagnóstico inicial 
+
+ (a) O que distingue um elemento de um atributo.
+
+  Um atributo é uma caracteristica de um determinado elemento, sendo uma informação
+  complementar a esse elemento.
+
+ (b) O que quer dizer «estrutura em árvore» e o que são pai, filho e irmão.
+
+  Uma árvore é formada por uma hierarquia de todos os seus elementos, tendo como objetivo manter 
+  a informação o mais organizada possível. Para isso, cada elemento tem uma designação sendo "pai" os elementos
+  que contêm outros elementos, "filho" os elementos contidos por outros elementos e "irmão" os elementos 
+  que estão no mesmo nível hierárquico.
+
+ (c) Por que razão dois programas diferentes conseguem ler o mesmo ficheiro XML.
+
+  Porque o XML é uma linguagem de marcação que segue um padrão, sendo assim, qualquer programa que siga esse padrão consegue ler o mesmo ficheiro XML.
+
+CA1 Anatomia do documento e terminologia
+(a) Em <preco>29.99</preco>, quantos nós existem? Onde está o nó de texto e de quem é filho?
+ 
+  Na premissa a cima existem 2 nós, sendo o nó de texto "29.99" e é filho do elemento <preco>.
+   
+(b) Um atributo é irmão dos elementos filhos do elemento onde está? Porquê?
+
+  Não, um atributo está contido em outro elemento, sendo esse designado como "pai" e não pode ter irmãos, um atributo
+  não participa da mesma interligação de dados presente entre os elementos.
+
+(c) O que distingue um elemento intermédio de um elemento terminal? Um elemento terminal pode ter atributos?
+
+  Por definição um elemento terminal está contido num elemento intermédio, sendo este último um elemento que contém outros elementos. 
+  Um elemento terminal pode ter atributos.
+
+CA2 · Hierarquia e representação de coleções
+(a) Olhando para a lista de nomes, quais são dados (valores que alguém escreve) e quais são apenas agrupadores de outros nomes? Que pista dá o plural de produtos?
+  
+  Dados: numero, data, quantidade, preco, codigo, designacao, nome, morada e telefone. Agrupadores: fatura,produtos, produto, cliente e cabecalho. O plural produtos indica
+  que existe um elemento que contém os dados de cada produto individualmente (produto) e o grupo de todos os produtos.
+
+(b) Um documento XML tem uma única raiz. Qual dos nomes da lista consegue conter todos os outros? Porquê esse e não outro?
+ 
+ Fatura é a raiz principal desta arvore, por ser o único elemento que contém todas as categorias.
+ 
+(c) O nome aparece na lista uma só vez, mas tanto um cliente como um produto podem ter nome. Onde o colocaste? Como é que quem lê o ficheiro sabe de que nome se trata?
+ 
+  Existem dois campos principais onde um nome poderia ser necessário, sendo eles o nome do cliente e o nome do produto. No entanto, cada elemento só pode ser utilizado 
+  uma vez, e dentro das opções que estavam disponiveis não seria lógico colocar designação como nome de uma pessoa. Resumindo, por questões lógicas a utilização de nome
+  para defenir uma pessoa faz mais sentido do que para um produto, sendo assim, o nome do cliente foi colocado dentro do elemento cliente. Quem ler o ficheiro sabe que
+  se trata do nome do cliente porque está contido dentro do elemento cliente.
+
+(d) Se a fatura tiver dez produtos, a tua estrutura aceita-os sem inventar nomes novos (produto1, produto2, …)? O que é que garante isso?
+ 
+  Sim, a estrutura aceita 10 produtos sem inventar nomes novos, uma vez que o elemento produto pode repetir se enquanto filho do elemento produtos,
+  sendo assim, cada produto é um elemento filho do elemento produtos.
+
+CA3 · Escolha entre elemento e atributo
+(a) O que é que se perde ao transformar o elemento numero no atributo id? Um atributo pode ter filhos? Pode repetir-se no mesmo elemento?
+ 
+  Perde se a capacidade de ter elementos derivados de numero, porque um atributo não pode ter filhos, uma vez que é uma caracteristica de um determinado elemento. Um atributo não se pode repetir 
+  no mesmo elemento, uma vez que cada elemento só pode ter um atributo com o mesmo nome.
+
+(b) Se amanhã o número da fatura passasse a ter uma série e um ano dentro dele, a tua escolha continuava a servir?
+  
+  Não, uma vez que o elemento numero deixava de poder ser um atributo e sim um elemento intermédio, uma vez que passava a ter outros elementos dentro dele.
+
+(c) Um dado como a morada pode vir a ter rua, código postal e localidade. Isso influencia a decisão de o representar como elemento ou como atributo?
+ 
+  Sim, uma morada tendo vários elementos derivados dela já não é possível ser representada como atributo. 
+
+CA4 · Boa formação e interpretação de erros
+(a) Se removeres uma etiqueta de fecho, o ficheiro deixa de ser lido por qualquer programa. Por que razão é este critério tão rígido, se o texto continua a ser perfeitamente compreensível para um humano?
+
+ Porque o XML é uma linguagem que é suposto ser lida por vários programas diferentes e cada um deles pode ter uma forma diferente de interpretar o mesmo 
+ texto, sendo assim, para que todos os programas consigam ler o mesmo ficheiro XML é necessário que este esteja bem formado e siga regras que
+ funcionem para todos os programas.
+
+(b) A mensagem que obtiveste identifica a linha do erro. É essa a linha onde o erro está, ou a linha onde ele foi detetado? O que explica a diferença?
+(c) Por que razão <Preco> e <preco> são elementos diferentes? Que problema evita esta regra?
+CA5 · Valor em texto ou em atributo
+(a) Na árvore da livraria, o title tem o atributo lang e o book tem o atributo category. 
+O que têm em comum, do ponto de vista do tipo de informação que guardam, quando comparados com o texto do título do livro?
+(b) Ao mover o preço para o atributo value, o elemento price fica vazio. Como o fechas? O documento continua a dizer a mesma coisa a quem o lê?
+(c) Qual das duas formas escolherias se o preço passasse a ter de indicar também a moeda? Porquê?
+-->
+
+<!-- Preencha a tabela seguinte para o seu ficheiro fatura-v2.xml, escolhendo um nó de cada tipo.
+
+Nó         Tipo        Pai          Irmão        Justificação
+fatura     Raiz         -             -          Não apresenta pai nem irmão, sendo a raiz da árvore, ou seja contem todos os elementos do documento(Não pode ser contida).
+cabecalho  Intermédio  fatura     produtos       Contém outros elementos e é contido por outros elementos, sem a utilização de nós de texto. 
+data       Terminal    produto    designacao     Tal como o nome indica, é um elemento final da árvore, não contem outros elemnetos. Só possui nós de texto.
+id         Atributo    produto        -          O id é um atributo do elemento produto, sendo uma caracteristica do mesmo. Não pode ter irmãos, uma vez que se encontra com uma classificação diferente dos elementos filhos do elemento onde está.
+Gin Tónico Texto       designacao     -          O nó de texto não possui irmãos uma vez que a cada elemento pertence um e um só nó de texto.
+
+4.4 Reflexão Critica
+
+(a) Qual foi o critério que usou para decidir entre elemento e atributo? Aplique-o ao telefone do cliente e justifique a decisão que tomou.
+ 
+ A diferença entre elemento e atributo é que um é a caracteristica do outro, sendo informação adicional do mesmo elemento. 
+ O telefone poderia ter mais elementos derivados dele logo é um elemento. Porque no futuro pode haver a necessídade de 
+ adicionar elementos ao telefone. 
+ 
+(b) Indique um dado da sua fatura que poderia ser atributo e um que não poderia. O que os distingue?
+
+ Um dado que não poderia ser um atributo é a "morada" uma vez que pode mais tarde a ter elementos derivados do próprio.  Pelo contrário,
+ um dado que poderia ser substituido por um atributo seria "quantidade" não teria nenhum elemento derivado.
+
+(c) Um serviço Web recebe a sua fatura e precisa de calcular o total. Esse valor deve estar no ficheiro ou ser calculado por quem o lê? Que argumentos há para cada opção?
+
+ O valor já deve estar presente na fatura, para facilitar o trabalho do serviço web. Caso fosse necessário calcular seria mais inconveniente
+ para os dois pois pode existir um erro de cálculo. Por outro lado se o serviço Web calcular o total pode 
+ prevenir um erro caso exista uma alteração de preço.
+
+(d) A sua estrutura permite representar uma fatura sem produtos? E uma fatura com dois clientes? O XML, por si só, impede alguma destas situações?
+
+ O XML não impede nenhuma das situações, é possível adicionar mais cliente dentro do elemento cabecalho e também é possivel 
+ apresentar uma fatura sem produtos.
+
+(e) Dois colegas resolveram o ponto 1 com hierarquias diferentes e ambos os ficheiros são bem formados. Que problema é que isso levanta a quem tem de escrever o programa que lê estas faturas?
+
+ Que ao implementar os dois programas podem gerar problemas a nível de hierarquia, isto quer dizer que foi feito para ler o programa apenas de uma
+ estrutura única e não várias
+
+-->
+
+Exemplo de base de dados em XML
+<?xml version="1.0" encoding="UTF-8"?>
+
+<preco>29.99</preco>
+
+<documento id="001">
+ <tipo>notas</tipo>
+ <texto>O XML é muito engraçado!!!</texto>
+</documento>
+
+<lojalivros>                        <!--Raiz da árvore-->
+ <livro>                            <!--Elemento intermédio da árvore-->
+    <titulo>Harry Potter</titulo>   <!--Elemento terminal com os dados-->
+    <autor>J. K. Rowling</autor>
+    <ano>2005</ano>
+    <preco>29.99</preco>
+ </livro>
+</lojalivros>
+
+<img src="smiley.gif" alt="smiley face" height="42" width="42"/>
