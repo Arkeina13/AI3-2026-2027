@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<aviso
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:noNamespaceSchemaLocation="aviso.xsd">
+
+  O Aluno <nome>Manuel Dias</nome> que realizou o trabalho número <numerotrabalho>1032</numerotrabalho>
+  entregue no dia <dataentrega>2026-10-13</dataentrega>. Para receber a nota do trabalho entre em contacto por
+  <email>secretaria@estgv.pt</email> ou <telefone>232480500</telefone>.
+</aviso>
