@@ -1,0 +1,173 @@
+/*2.2 · Diagnóstico inicial
+(a) O que distingue, num documento JSON, um objeto de um array, e quando se usa cada um.
+
+  Num documento JSON, um objeto é representado por chaves `{}` e contém pares de chave-valor, enquanto um array é 
+  representado por parentecies retos `[]` e contém uma lista ordenada de valores. 
+  Um objeto é usado quando se deseja representar uma entidade com propriedades nomeadas, enquanto um array é usado
+  para representar uma coleção de itens, geralmente do mesmo tipo.
+
+(b) Por que razão um atributo XML não tem tradução direta em JSON, e o que isso obriga a decidir na conversão.
+
+  Um atributo XML não tem tradução direta em JSON porque JSON não possui um conceito de atributos; ele apenas possui pares de chave-valor. 
+  Por isso na conversão, os atributos passam a propriedades do objeto, lado a lado com os elementos filhos.
+
+(c) Por que razão o schema é ele próprio um documento JSON, e o que isso implica para o ficheiro .schema.json que vais escrever
+
+  O schema é ele próprio um documento JSON porque é escrito com a mesma linguagem e segue as mesmas regras de formatação/validação.
+  Caso não cumpra as regras não é lido como schema.
+  
+
+CA1 · Representação JSON e papel do schema
+Os atributos codigo e horas do XML passaram a ser representados de que forma em JSON? Ainda é possível, olhando só para o JSON, saber o que era atributo e o que era elemento? Isso faz falta a quem o processa?
+
+ Os atributos `codigo` e `horas` do XML foram representados como propriedades do objeto em JSON. Olhando apenas para o JSON, não é possível 
+ distinguir diretamente entre o que era um atributo e o que era um elemento no XML, pois ambos são representados como pares de chave-valor.
+ Isso pode fazer falta a quem processa os dados, especialmente se a distinção entre atributos e elementos for relevante para a lógica de
+ negócios ou para a interpretação dos dados.
+
+Porque é que os vários disciplina do XML deram origem a um array e não a várias propriedades com o mesmo nome?
+
+ Uma vez que, os elementos disciplina no XML podem ocorrer múltiplas vezes, eles são representados como um array em JSON para manter a ordem
+ e permitir a inclusão de múltiplos valores. Várias propriedades com o mesmo nome não seria permitido pela sintaxe do sistema, tornaria o documento inválido.
+
+Em XML, o documento apontava para o seu schema. E em JSON? Onde fica registada essa associação no teu trabalho?
+
+ A associação entre o documento JSON e o seu schema não é feita de forma explícita dentro do próprio documento JSON, como acontece em XML.
+ Em JSON, essa associação é geralmente feita fora do documento, por convenção ou através de ferramentas de validação que utilizam o schema 
+ para verificar a conformidade do documento JSON.
+
+O ficheiro .schema.json é ele próprio verificado por alguma coisa? O que acontece se ele tiver uma vírgula a mais?
+ 
+  O ficheiro .schema.json é verificado pelas regras de sintaxe de JSON Schema, que garantem que a estrutura do schema está correta e segue as regras 
+  do JSON Schema. Se o ficheiro tiver uma vírgula a mais, ele será considerado inválido e apresenta um erro de sintaxe antes mesmo de ser validado contra
+  o schema.
+
+CA2 · Tipos, propriedades e obrigatoriedade
+1)Porque escolheste integer e não number para as horas? E porque não string? O que passa a ser rejeitado por causa dessa escolha?
+
+  O type `integer` foi escolhido para as horas porque elas representam uma quantidade inteira de tempo, sem casas decimais. 
+  O tipo `number` permitiria valores decimais, o que não é adequado para representar horas inteiras. O tipo `string` não seria apropriado
+  porque horas devem ser tratadas como números para permitir operações matemáticas e validações numéricas. Com essa escolha, qualquer valor 
+  que não seja um número inteiro (como 2.5 ou "duas") será rejeitado pelo schema.
+
+2)Se o documento tiver "ano": "2", é válido? E "ano": 2.0? Porquê?
+
+  Se o documento tiver "ano":"2", ele não é válido porque o valor é intergir (só aceita números inteiros) e com o número 2 se encontra entre "" é considerado
+  uma string.No entanto, "ano": 2.0 é válido porque com está descrito como integer e 2.0 e 2 são o mesmo valor. Portanto, o schema rejeita valores que não correspondam
+  exatamente ao tipo definido string vs integer.
+
+3)Uma propriedade declarada em properties mas ausente de required é obrigatória ou opcional? Onde se escreve o required: dentro da propriedade ou no objeto que a contém?
+
+ Uma propriedade declarada em properties mas ausente de required é opcional. O required é escrito no objeto que contém as propriedades, 
+ não dentro da propriedade em si.
+
+4)O teorica tem um required próprio. Se o retirares, o que passa a ser aceite?
+
+ Se for retirado o required do teorica, qualquer documento JSON que não inclua a propriedade teorica será aceito como válido. Isso significa 
+ que passaria a ser possivel validar uma teorica sem nome e sem horas.
+
+CA3 · Restrições de valor e dependências
+O teu pattern para o nome da disciplina aceita "Introducao as Aplicacoes"? Porquê? O que mudaria sem ^?
+
+ Não aceitaria, porque o pattern exige que o nome comece por Aplicações. Sem ^ a string coontinuaria a ser rejeitada
+ por não há mais "espaço" apos a o nome, ^ proporciona que seja possivel adicionar mais palavras.
+
+O enunciado pede «maior que 15 e menor que 25». Que valores puseste em minimum e maximum, e porque é que isso só está certo por causa do tipo que escolheste?
+
+ Pus minimum: 16 e maximum: 24, porque ambos são inclusivos. Só fica certo por causa do tipo integer, em que «maior que 15» equivale a 
+ «pelo menos 16». Com number, 15.5 seria «maior que 15» e seria rejeitado por engano.
+
+O contacto é um número. Se lhe aplicares um pattern, o que acontece? Como o demonstras?
+
+ O pattern aplicado a um número é ignorado em silêncio. Demonstrei com "contacto": 232480500 e um pattern ^[0-9]{3}$ no ramo inteiro, e o documento continua válido.
+ O enquadramento diz que pattern, minLength e maxLength só se aplicam a strings.
+
+A dependência entre numeroInscritosTp1 e docenteTp1 funciona nos dois sentidos? Mostra um documento válido que tenha docenteTp1 sem numeroInscritosTp1.
+
+ Só funciona num sentido. Se existir numeroInscritosTp1, tem de existir docenteTp1 (sem ele: 'docenteTp1' is a dependency of 'numeroInscritosTp1'). 
+ O inverso é válido: o turma.json sem numeroInscritosTp1 mas com docenteTp1 passa (testado).
+
+CA4 · Arrays, composição e validação
+Onde colocaste minItems e maxItems no array cursos? O que acontecia se os tivesses posto dentro de items?
+
+ Pus minItems e maxItems ao nível do array cursos, ao lado de items. Dentro de items seriam aplicados a cada elemento (uma string) e ignorados.
+
+O planoAno1 usa oneOf. Um array vazio é válido? E se trocares por anyOf? Explica a diferença a partir da definição de cada um.
+
+ Com oneOf, um array vazio não é válido: satisfaz os dois subesquemas, e o oneOf exige exatamente um ([] is valid under each of ...). 
+ Com anyOf é válido, porque basta um. Uma lista misturada (["ADM1","ID1"]) é rejeitada nos dois.
+
+A falha que provocaste tornou o documento sintaticamente incorreto ou apenas inválido? Como distingues as duas situações pela mensagem, e pela ferramenta que a deu?
+
+ Dependendo da falha. Se retirar uma vírgula, o documento fica sintaticamente incorreto, e é o python3 -m json.tool que o 
+ deteta: Expecting ',' delimiter: line 4 column 3. Esta mensagem fala de delimitadores, e a linha indicada é onde o parser tropeçou, não onde faltava a vírgula.
+ Se pus texto onde era esperado um número, o documento fica inválido, e quem o deteta é o validador de schema: 'vinte' is not of type 'integer'. 
+ Esta mensagem fala de tipos e propriedades.
+
+Se trocares a ordem de duas propriedades, o documento continua válido? Compara com o que acontecia com xsd:sequence.
+
+ Continua válido. Num objeto JSON as propriedades não têm ordem e o leitor acede por nome. O xsd:sequence exigia a ordem dos elementos. 
+ Em JSON, a ordem só importa nos arrays.
+
+CA5 · Limites da especificação
+O teu schema aceita "cursos": ["tdm", "tdm"]? Consegues impedi-lo com os mecanismos desta ficha?
+
+ Aceita, porque ["tdm","tdm"] cumpre o tamanho e os valores do enum. Impedi-lo exigiria uniqueItems, 
+ que está excluído desta ficha, por isso a resposta fica para mais tarde.
+
+Se acrescentares ao turma.json uma propriedade "observacoes" que não declaraste, o documento continua válido? O que é que isso te diz sobre o que o schema de base não fecha?
+
+ Continua válido, porque o schema só restringe o que declara. Fechar o objeto exigiria additionalProperties, 
+ também excluído. O schema de base deixa as propriedades não declaradas passar.
+
+Uma docente chamada "Inês Sá" passa no padrão dos nomes? Se não, o erro está nos dados ou no schema?
+
+ Não passa, porque [A-Z][a-z]+ não inclui letras acentuadas. O erro está no schema, que é demasiado restritivo para nomes reais, e não nos dados.
+
+O teu schema garante que numeroInscritosTp1 + numeroInscritosTp2 é igual a totalAlunos? Onde é que essa verificação teria de ser feita?
+
+ Não garante. Testei 12 + 9 inscritos com totalAlunos 20 e o documento é válido. O JSON Schema de base não compara valores entre propriedades. 
+ Essa verificação teria de ser feita pelo programa que processa os dados (lógica de negócio), e a ficha exclui código para verificar dados.
+ 
+4.4 · Verificação
+As quatro alterações (turma.json)
+
+Alteração	                  Classificação	      Ferramenta e mensagem
+Retirar a vírgula          sintaxe errada        python3 -m json.tool: Expecting ',' delimiter: line 4 column 3
+entre dois pares
+
+Texto onde é esperado       inválido             validador: 'vinte' is not of type 'integer'
+um número
+
+Retirar uma propriedade     inválido             validador: 'codigo' is a required property
+obrigatória
+
+Trocar a ordem de duas      válido
+propriedades
+
+4.5 · Reflexão crítica
+Ao converter o XML em JSON, a distinção entre atributo e elemento desapareceu. Perdeu-se informação? Para quem é que isso importa?
+
+ Perdeu-se a informação estrutural de que codigo era atributo e nome era elemento. Para um programa que só lê o JSON, com nomes conhecidos, pode não importar. 
+ Importa a quem precise de reconverter para XML sem perdas, ou a quem trate os atributos (metadados) de forma diferente do conteúdo.
+
+O XML Schema da ficha anterior impunha a ordem dos elementos; o JSON Schema não. Isso é uma fraqueza ou uma vantagem para quem escreve o programa leitor?
+
+ É uma vantagem para o leitor, que acede por nome e não depende da ordem em que o autor escreveu as propriedades. A fraqueza é não poder exigir uma ordem,
+ mas quando a ordem tem significado usam-se arrays, que a mantêm.
+
+O totalAlunos é um número entre 16 e 24. Que combinações absurdas de valores o seu schema continua a aceitar? O que faria falta para as impedir?
+
+ Aceita, por exemplo, totalAlunos 16 com 100 + 100 inscritos, ou o mesmo docente nos dois turnos (ambos testados), ou cursos repetidos. Para os impedir faria falta
+ comparar valores entre propriedades (programa que processa os dados) e mecanismos excluídos como uniqueItems.
+
+Um documento é válido hoje. Amanhã acrescenta-se ao required uma propriedade nova. O que acontece a todos os documentos já existentes? Que escolha teria evitado o problema?
+
+ Os documentos existentes passam a ser inválidos, porque não têm a nova propriedade (testei com sala). Teria evitado o problema declarar a propriedade em properties 
+ mas fora de required, ou seja, opcional, ou lançar uma nova versão do schema.
+
+Compare o custo de validar com o custo de não validar: que erros passam a ser detetados no momento certo, e que trabalho é que isso poupa a quem escreve o programa leitor?
+
+ Validar à entrada deteta no momento certo os erros de tipo, os campos em falta e os valores fora do domínio, e poupa a quem escreve o leitor as verificações defensivas 
+ espalhadas pelo código. O custo é escrever e manter o schema, e ele não apanha regras entre campos, como a soma dos inscritos
+*/
