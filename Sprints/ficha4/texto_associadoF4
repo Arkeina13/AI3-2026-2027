@@ -1,0 +1,97 @@
+/*
+2.2 · Diagnóstico inicial
+(a) Porque é que o mesmo URL (/avisos/42) pode servir para obter, substituir e remover um recurso, e o que é que distingue as três operações.
+
+ O URL identifica o recurso e o metodo diz o que fazer com ele. GET/avisos/42 obtém, PUT substitui por inteiro e DELETE remove. Os três usam o mesmo URL e diferem no método e no corpo.
+
+(b) O que significa um método ser idempotente, e porque é que isso torna um PUT repetido inofensivo e um POST repetido perigoso.
+
+ Um método é idempotente quando repeti-lo tem o mesmo efeito que executá-lo uma vez. Um PUT repetido deixa o recurso no mesmo estado, por isso é inofensivo. Um POST repetido cria mais
+ um elemento de cada vez, e uma rede que falha pode causar duplicados.
+
+(c) O que é que no-cache permite a um cliente fazer com uma resposta, e em que difere de no-store.
+
+ O no-cache permite guardar a resposta, mas obriga a revalidar com o servidor antes de cada uso. O no-store proíbe guardar de todo. O nome no-cache engana.
+
+CA1 · Recursos, URLs e métodos
+Porque é que acompanhamentos fica por baixo de /sugestoes/{id} e as estatisticas não?
+
+ Um acompanhamento só existe dentro de uma sugestão, pertence-lhe e não faz sentido sozinho. As estatísticas calculam-se sobre muitas sugestões e não pertencem a nenhuma, por isso 
+ são um recurso independente.
+
+Porque é que o filtro por estado é um parâmetro de query e não um URL como /sugestoes/aceites?
+
+ Um filtro não é um recurso novo, é uma forma de ver a mesma coleção. Como URL multiplicaria os caminhos a cada combinação (estado, categoria, página). 
+ Como parâmetro de query compõe-se.
+
+Se o cliente repetir um PUT por não ter recebido resposta, o que acontece? E se repetir o POST que cria a sugestão?
+
+ Repetir o PUT deixa a sugestão no mesmo estado, porque é idempotente. Repetir o POST cria uma nova sugestão, porque não é idempotente.
+
+Registar um acompanhamento altera o estado da sugestão. Porque é que se usa POST numa subcoleção, e não PATCH em /sugestoes/{id}? O que se perdia com o PATCH?
+
+ Um acompanhamento é um registo novo no histórico, por isso é um POST na subcoleção. Um PATCH em /sugestoes/{id} só mudaria o estado, e perdia-se o histórico. 
+ O PATCH também não é idempotente garantido.
+
+CA2 · Schemas, tipos e reutilização
+Porque é que existem SugestaoNova e Sugestao? Como se ligam? O que acontece se um aluno enviar "estado": "resolvida" no POST?
+
+ SugestaoNova é o que o aluno envia, e Sugestao é o que o servidor devolve: o mesmo objeto mais id, estado e datas, ligados por allOf e $ref. Se o aluno enviar 
+ "estado": "resolvida" no POST, o schema não o rejeita, porque additionalProperties está excluído. O estado é readOnly, e quem o decide é o servidor, que o deve ignorar.
+
+Porque é que o id é um integer e o numeroAluno é uma string, se ambos são feitos de algarismos?
+
+ O id é um número usado para identificar e ordenar, com minimum: 1. O numeroAluno é um identificador, não se faz aritmética com ele, e pode ter zeros à esquerda, 
+ como inteiro seria rejeitado, além de perder os zeros.
+
+Em que situação é que tempoMedioResolucaoDias é null? Como o exprimiste, sabendo que o tipo null não existe em OpenAPI 3.0?
+
+ É null quando ainda não há sugestões resolvidas, porque a média não existe. Como o tipo null não existe em OpenAPI 3.0, declara-se com nullable: true.
+
+Se escreveres description: Estado atual ao lado de $ref: '#/components/schemas/Estado', a descrição aparece? Como o demonstras?
+
+ Não aparece, porque tudo o que está ao lado de um $ref é ignorado em silêncio.
+
+Porque é que porEstado é um objeto com cinco propriedades obrigatórias e não um array? O que é que o cliente ganha com isso?
+
+ Com cinco propriedades obrigatórias, o cliente acede a cada estado pelo nome e tem a garantia de que os cinco existem sempre. Num array teria de procurar o 
+ elemento certo, e algum podia faltar.
+
+CA3 · Códigos de resposta
+Editar uma sugestão que já está em_analise devolve 409, não 400. Porquê? O pedido estava errado?
+
+ O pedido estava bem formado e seria aceite se a sugestão estivesse submetida. O que o impede é o estado atual do recurso, por isso é 409. 
+ Um 400 resolve-se corrigindo o pedido, e um 409 depende do estado do servidor
+
+Um pedido GET /sugestoes/abc deve dar 400 ou 404? O que diz o teu documento, e porquê?
+
+ O documento declara só o 404 para obterSugestao: um URL com abc não identifica nenhum recurso. Um 400 também seria defensável, 
+ mas não está declarado, por isso cairia na resposta default.
+
+Porque é que o DELETE devolve 204 e não 200? Que consequência tem isso na forma como declaraste a resposta?
+
+ O 204 não tem corpo, porque não há nada a devolver. Por isso a resposta é declarada sem content, só com description e o cabeçalho de cache.
+
+O POST de um acompanhamento devolve 201 sem Location. É um erro de desenho? O que faltaria na API para o Location fazer sentido?
+
+ Não é um erro de desenho. Para o Location fazer sentido teria de existir um URL que identificasse um acompanhamento.
+
+Para que serve a resposta default? Que código concreto ela cobre na tua API?
+
+ A default cobre qualquer erro que não esteja listado. Na minha API o caso concreto é o 500, o erro interno do servidor, que nenhuma operação declara.
+
+CA4 · Cache e pedidos condicionais
+Porque é que /categorias tem public, max-age=86400 e /sugestoes/{id} tem private, no-cache? O que corria mal se trocasses os dois?
+Um cliente recebeu as estatísticas às 10h00 e volta a pedi-las às 10h40. O pedido chega ao servidor? Os números podem estar desatualizados? Até quando?
+Descreve a troca completa de pedidos e respostas que termina num 304. Porque é que o 304 não tem content?
+O aluno abre a mesma sugestão no telemóvel e no portátil, e edita-a nos dois. O que impede a segunda edição de apagar a primeira? Porque é que If-Match é obrigatório e If-None-Match é opcional?
+Porque é que as respostas 201, 204 e de erro levam no-store?
+CA5 · Validação e limites da especificação
+A falha que provocaste tornou o documento YAML sintaticamente incorreto, OpenAPI inválido, ou apenas deixou um exemplo que não cumpre o schema? Que ferramenta a detetou em cada caso?
+Se desalinhares para a esquerda a chave responses de uma operação, o YAML continua correto? E o OpenAPI? Que ferramenta dá o erro, e porquê essa?
+O teu contrato impede a transição rejeitada → resolvida? Se não, onde teria de ser verificada?
+O teu documento obriga o servidor a enviar Cache-Control: public, max-age=3600? Como verificarias se o faz?
+O anoLetivo "2026-2031" passa no teu pattern? O erro está nos dados ou no contrato?
+O contrato garante que a soma dos valores de porEstado é igual a totalSugestoes? E que um aluno só edita as suas sugestões?
+
+*/
