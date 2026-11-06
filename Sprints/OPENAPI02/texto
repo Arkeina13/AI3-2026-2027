@@ -1,0 +1,67 @@
+## 4.1 · «Antes de avançar»
+
+**Que cliente da v1 deixa de funcionar?** Qualquer cliente que chame as operações 1 a 7 sem `Authorization` passa a receber 401. É o caso do cliente que cria uma sugestão com `numeroAluno` no corpo e sem token. Os clientes que só usam estatísticas e categorias (operações 8 a 10, públicas) continuam a funcionar. Isto liga-se à última questão da reflexão da API01: na v1, o `numeroAluno` vinha do corpo e não havia identidade verificável, pelo que «um aluno só edita as suas sugestões» era impossível de garantir. Na v2, a identidade vem do token assinado.
+
+**`numeroAluno: "99999"` no POST /sugestoes: o contrato aceita ou rejeita?** Aceita. O `SugestaoNova` já não declara `numeroAluno` e o contrato não usa `additionalProperties: false` (excluído desta ficha), pelo que uma propriedade a mais é válida. O servidor deve **ignorar** esse valor e usar o `sub` do token. Rejeitá-lo com 400 seria recusar um pedido que o contrato considera válido, e aceitá-lo como bom permitiria a falsificação que se pretende evitar.
+
+**Cache (CA4).** Respostas que dependem da identidade: `listarSugestoes`, `obterSugestao`, `listarAcompanhamentos` (já `private, no-cache`) e os erros 401/403/404 (`no-store`). As respostas de escrita são `no-store`. Estatísticas e categorias são iguais para todos e mantêm `public`. Só faltava `no-store` no 200 de `criarToken` e nos 401/403 novos.
+
+**Opções de `jwt.verify` (CA5).** `{ algorithms: ['HS256'] }`: impede que o token escolha o algoritmo (recusa `none` e qualquer outro). `ignoreExpiration` não é passado, ficando `false` por omissão: impede aceitar tokens expirados. A assinatura é sempre verificada com o segredo do servidor.
+
+---
+
+## Ponto 27 · Alterações ao contrato
+
+| Alteração | Classificação esperada | Ferramenta | Mensagem obtida | O que permitiu (ou não) concluir |
+|-----------|------------------------|------------|-----------------|----------------------------------|
+| `tokenJWT` no `security` da raiz sem o declarar em `securitySchemes` | OpenAPI inválido (YAML correto) | redocly lint | --- | Que há uma referência a um esquema inexistente; não diz qual era a intenção. |
+
+| `type: bearer` em vez de `type: http` | OpenAPI inválido (YAML correto) | redocly lint | --- | Que o valor não é um tipo admitido; `bearer` é um `scheme`, não um `type`. |
+
+| `- tokenJWT: [servicos]` em `registarAcompanhamento` | Inválido segundo a especificação (a lista tem de ser vazia em `http`); confirmar se o linter o assinala | redocly lint | --- | Se não for assinalado, conclui-se que o papel exigido não é verificável por ferramenta. |
+
+| Retirar `security: []` de `listarCategorias` | Válido (sem erro) | redocly lint | --- | Que a ferramenta não deteta mudanças de significado: as categorias passam a exigir token. |
+
+| `numeroAluno` no `required` de `SugestaoNova` sem a propriedade | Formalmente válido; semanticamente incoerente (confirmar se há aviso) | redocly lint | --- | Que o contrato passaria a exigir um campo que não declara. |
+
+| `tipo: bearer` (minúsculas) no exemplo do Token | Exemplo inválido (YAML e OpenAPI corretos) | redocly lint (regra de validação de exemplos) | --- | Que o exemplo viola o `enum: [Bearer]` do schema. |
+
+---
+
+## Ponto 30 · Construções utilizadas
+
+| Construção | Onde foi utilizada | O que passou a ser exigido | O que continua a ser permitido |
+|---|---|---|---|
+| `securitySchemes` http/bearer | `tokenJWT` em `components.securitySchemes` | `Authorization: Bearer <JWT>` nas operações protegidas | Escolher como o cliente guarda o token; o OpenAPI não valida o conteúdo (`bearerFormat` é informativo) |
+
+| `security` na raiz | Raiz do contrato | Token em todas as operações que não o isentem | Operações que redefinam o seu próprio `security` |
+
+| `security: []` | `listarCategorias`, estatísticas e `criarToken` | Nada | Chamar sem token |
+
+| `readOnly` em `numeroAluno` | `Sugestao.numeroAluno` | Não o enviar; é atribuído pelo servidor | Lê-lo nas respostas; um cliente v1 que o envie continua a ser aceite (ignorado) |
+
+| 401 + `WWW-Authenticate` | `NaoAutenticado`, operações 1 a 7 | O servidor responde 401 com o desafio e `no-store` se o token faltar, for inválido ou expirar | O cliente autenticar-se de novo e repetir |
+
+| 403 | `Proibido`, operações 2, 4, 5 e 7 | Papel adequado à operação | Os serviços continuarem a ler tudo; o cliente deixar de repetir e esconder a ação |
+| `exigirToken` + `jwt.verify` | `autenticacao.js`, `GET /v2/sugestoes` | Algoritmo HS256, assinatura válida e `exp` não ultrapassado | Qualquer portador de token válido, mesmo depois do termo de sessão no cliente |
+
+| `Cache-Control: no-store` em `criarToken` | 200 e 401 de `POST /tokens` | Nenhuma cache HTTP guarda o token | O cliente mantê-lo em memória durante a sessão |
+
+---
+
+## 4.5 · Reflexão crítica
+
+1.
+  O termo de sessão só descartou a cópia local e repôs a interface; o servidor não tem registo que possa invalidar. Invalidar no servidor exigiria estado (uma lista de revogação ou um registo de sessões) consultado em cada pedido, o que desfaz a vantagem do token autossuficiente. A revogação está excluída desta ficha: a solução de base não resolve o problema e a resposta fica remetida para fase posterior. A mitigação é a validade curta.
+2.
+  Com 15 s, a janela de abuso é mínima e as mudanças de papel têm efeito quase imediato, mas, sem renovação, o utilizador teria de se autenticar constantemente e o servidor faria bcrypt em cada pedido. Com 15 dias, a conveniência é máxima, mas um token roubado vale 15 dias e, sem revogação, os termos de sessão e as mudanças de papel só valem no fim. Os 15 minutos são um compromisso.
+3. 
+  O localStorage é legível por qualquer script da origem (XSS) e persiste, pelo que um token roubado serve até exp. A variável de módulo não fica em armazenamento e é mais difícil de extrair, embora um XSS ainda possa fazer pedidos enquanto a página estiver aberta. Um cookie HttpOnly não é legível por JavaScript, mas é enviado automaticamente pelo browser.
+4. 
+  No token: rápido e sem consulta, mas uma alteração de papel só se aplica quando o token expirar (até 15 min). Consultado em cada pedido (por exemplo, a partir do ficheiro de utilizadores): a alteração é imediata, mas há uma consulta por pedido e o servidor passa a depender dessa fonte.
+5. 
+  Com HS256, verificar exige o segredo, e quem tem o segredo também pode emitir tokens. Cada serviço extra amplia a superfície de exposição do segredo e complica a sua rotação. Separar quem emite de quem verifica exige algoritmos assimétricos, o que está fora do âmbito: a resposta fica remetida para fase posterior.
+6.
+  O contrato 3.0.3 não exprime um limite de taxa. Teria de ser imposto no servidor, com contagem por utilizador ou origem, e a resposta seria 429 com Retry-After. 
+7.
+  Nenhuma proteção de confidencialidade: o token (e a palavra-passe) circulam em claro, e quem os observar na rede pode reutilizá-los (posse = autenticação). A assinatura garante integridade, não confidencialidade nem impede a reutilização. Daí o HTTPS obrigatório fora de localhost.

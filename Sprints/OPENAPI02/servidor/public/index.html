@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sugestões dos alunos</title>
+  <link rel="stylesheet" href="estilos.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Sugestões dos alunos</h1>
+
+    <div id="mensagens" role="alert"></div>
+
+    <section id="entrada" aria-labelledby="titulo-entrada">
+      <h2 id="titulo-entrada">Entrar</h2>
+      <form id="formulario-entrada">
+        <label for="utilizador">Número de aluno ou utilizador dos serviços</label>
+        <input id="utilizador" name="utilizador" type="text" autocomplete="username" required>
+
+        <label for="palavraPasse">Palavra-passe</label>
+        <input id="palavraPasse" name="palavraPasse" type="password" autocomplete="current-password" required>
+
+        <button type="submit" id="botao-entrar">Entrar</button>
+      </form>
+    </section>
+
+    <section id="sessao" aria-labelledby="titulo-sessao" hidden>
+      <h2 id="titulo-sessao">Sessão iniciada</h2>
+      <p><strong id="nome"></strong>, <span id="papel"></span></p>
+
+      <div class="validade">
+        <p>
+          O token expira às <time id="expira"></time>.
+          Tempo restante: <strong id="restante"></strong>
+        </p>
+        <progress id="validade" value="0" max="1" aria-labelledby="restante"></progress>
+      </div>
+
+      <button type="button" id="botao-sugestoes"></button>
+      <ul id="lista-sugestoes" aria-live="polite"></ul>
+
+      <button type="button" id="botao-terminar" class="secundario">Terminar sessão</button>
+    </section>
+  </main>
+</body>
+</html>
