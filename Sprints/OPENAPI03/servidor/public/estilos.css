@@ -1,0 +1,113 @@
+:root {
+  --tinta: #14212b;
+  --papel: #f5f8f9;
+  --superficie: #ffffff;
+  --linha: #b9c7cf;
+  --acento: #0b5c73;
+  --acento-escuro: #084657;
+  --erro: #9c1f26;
+  --erro-fundo: #fdeeee;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font: 1rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+main {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h1, h2 {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  line-height: 1.2;
+}
+h1 { font-size: 1.75rem; margin: 1rem 0; }
+h2 { font-size: 1.25rem; margin: 0 0 1rem; }
+
+section {
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+label { display: block; margin: 1rem 0 0.25rem; font-weight: 600; }
+
+input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  color: inherit;
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+}
+
+button {
+  min-height: 2.75rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1.25rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--acento);
+  border: 2px solid var(--acento);
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover { background: var(--acento-escuro); border-color: var(--acento-escuro); }
+button:disabled { opacity: 0.6; cursor: default; }
+button.secundario { color: var(--acento); background: transparent; }
+button.secundario:hover { color: #fff; background: var(--acento-escuro); }
+
+/* Contorno visível em todos os elementos com foco */
+:focus-visible {
+  outline: 3px solid #1a73e8;
+  outline-offset: 2px;
+}
+
+/* Mensagens de erro: texto "Erro:", barra lateral e negrito, e não apenas a cor */
+#mensagens:empty { margin: 0; padding: 0; border: 0; }
+#mensagens:not(:empty) {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--erro);
+  background: var(--erro-fundo);
+  border: 1px solid var(--erro);
+  border-left-width: 8px;
+  border-radius: 4px;
+}
+#mensagens:not(:empty)::before { content: "Erro: "; text-decoration: underline; }
+
+/* Validade do token: o elemento memorável da página */
+.validade p { margin: 0 0 0.5rem; }
+progress {
+  width: 100%;
+  height: 0.75rem;
+  appearance: none;
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  background: var(--papel);
+  overflow: hidden;
+}
+progress::-webkit-progress-bar { background: var(--papel); }
+progress::-webkit-progress-value { background: var(--acento); }
+progress::-moz-progress-bar { background: var(--acento); }
+
+#lista-sugestoes { list-style: none; margin: 1rem 0; padding: 0; }
+#lista-sugestoes li {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--linha);
+}
+#lista-sugestoes strong, #lista-sugestoes span { display: block; }
+#lista-sugestoes span { font-size: 0.9375rem; }

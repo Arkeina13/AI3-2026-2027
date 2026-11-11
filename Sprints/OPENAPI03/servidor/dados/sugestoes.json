@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "titulo": "Mais tomadas nas salas de estudo",
+    "descricao": "Faltam tomadas junto às mesas da biblioteca para carregar portáteis.",
+    "categoria": "instalacoes",
+    "numeroAluno": "12345",
+    "estado": "aceite",
+    "dataCriacao": "2026-10-09T14:30:00Z",
+    "dataAtualizacao": "2026-10-12T09:15:00Z",
+    "dataResolucao": null
+  },
+  {
+    "id": 2,
+    "titulo": "Opção vegetariana diária na cantina",
+    "descricao": "Pelo menos um prato vegetariano em todas as refeições servidas.",
+    "categoria": "servicos",
+    "numeroAluno": "12345",
+    "estado": "submetida",
+    "dataCriacao": "2026-10-20T12:10:00Z",
+    "dataAtualizacao": "2026-10-20T12:10:00Z",
+    "dataResolucao": null
+  },
+  {
+    "id": 3,
+    "titulo": "Horário alargado nos laboratórios",
+    "descricao": "Abertura até às 21h00 nas semanas de entrega de trabalhos.",
+    "categoria": "ensino",
+    "numeroAluno": "67890",
+    "estado": "resolvida",
+    "dataCriacao": "2026-09-28T16:45:00Z",
+    "dataAtualizacao": "2026-10-15T10:00:00Z",
+    "dataResolucao": "2026-10-15T10:00:00Z"
+  },
+  {
+    "id": 4,
+    "titulo": "Bicicletários cobertos junto à entrada",
+    "descricao": "Proteger os bicicletários da chuva com uma cobertura simples.",
+    "categoria": "instalacoes",
+    "numeroAluno": "67890",
+    "estado": "em_analise",
+    "dataCriacao": "2026-10-22T08:15:00Z",
+    "dataAtualizacao": "2026-10-26T11:20:00Z",
+    "dataResolucao": null
+  }
+]
